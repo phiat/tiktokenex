@@ -1,21 +1,81 @@
 # Tiktokenex
 
-**TODO: Add description**
+Pure Elixir BPE tokenizer compatible with OpenAI's [tiktoken](https://github.com/openai/tiktoken). No NIFs, no Python, no external dependencies.
+
+Supports `cl100k_base` (GPT-4, GPT-3.5) and `o200k_base` (GPT-4o) encodings.
+
+## Usage
+
+```elixir
+# Encode text to token IDs
+Tiktokenex.encode("Hello, world!")
+#=> [9906, 11, 1917, 0]
+
+# Decode back to text
+Tiktokenex.decode([9906, 11, 1917, 0])
+#=> "Hello, world!"
+
+# Count tokens
+Tiktokenex.count("Hello, world!")
+#=> 4
+
+# See the BPE chunks
+Tiktokenex.encode_to_chunks("Hello, world!")
+#=> ["Hello", ",", " world", "!"]
+
+# Use o200k_base encoding
+Tiktokenex.encode("Hello", :o200k_base)
+```
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `tiktokenex` to your list of dependencies in `mix.exs`:
+Add to your `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:tiktokenex, "~> 0.1.0"}
+    {:tiktokenex, path: "./tiktokenex"}  # local dependency
   ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/tiktokenex>.
+BPE rank files are stored in `priv/ranks/`. Download them with:
 
+```bash
+# cl100k_base (GPT-4, GPT-3.5)
+curl -o priv/ranks/cl100k_base.tiktoken \
+  https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken
+
+# o200k_base (GPT-4o)
+curl -o priv/ranks/o200k_base.tiktoken \
+  https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken
+```
+
+## How It Works
+
+1. **Pre-tokenization** (`Pretokenizer`) — splits text using tiktoken's regex patterns into coarse chunks
+2. **BPE encoding** (`BPE`) — applies byte-pair encoding merges using rank tables
+3. **Rank loading** (`Ranks`) — parses `.tiktoken` rank files, caches in `persistent_term`
+
+The algorithm matches tiktoken's output exactly. See `test/` for reference vectors.
+
+## API
+
+| Function | Description |
+|----------|-------------|
+| `encode(text, encoding)` | Text to token ID list |
+| `decode(ids, encoding)` | Token IDs back to text |
+| `encode_to_chunks(text, encoding)` | Text to BPE chunk strings |
+| `count(text, encoding)` | Token count |
+
+Default encoding is `:cl100k_base`. Pass `:o200k_base` as the second argument for GPT-4o tokenization.
+
+## Tests
+
+```bash
+mix test  # 47 tests covering BPE, ranks, pre-tokenization, round-trips
+```
+
+## License
+
+MIT
