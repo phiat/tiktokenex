@@ -28,9 +28,8 @@ defmodule Tiktokenex.BPE do
 
   def encode(<<>>, _ranks), do: []
 
-  defp merge_loop(pieces, ranks) when length(pieces) <= 1 do
-    Enum.map(pieces, fn piece -> Map.fetch!(ranks, piece) end)
-  end
+  defp merge_loop([], _ranks), do: []
+  defp merge_loop([piece], ranks), do: [Map.fetch!(ranks, piece)]
 
   defp merge_loop(pieces, ranks) do
     # Find the pair with the lowest rank
@@ -47,22 +46,25 @@ defmodule Tiktokenex.BPE do
   end
 
   defp find_min_pair(pieces, ranks) do
-    pieces
-    |> Enum.chunk_every(2, 1, :discard)
-    |> Enum.with_index()
-    |> Enum.reduce(nil, fn {[a, b], index}, acc ->
-      merged = a <> b
+    find_min_pair(pieces, ranks, 0, nil)
+  end
 
-      case Map.get(ranks, merged) do
+  defp find_min_pair([_], _ranks, _index, acc), do: acc
+  defp find_min_pair([], _ranks, _index, acc), do: acc
+
+  defp find_min_pair([a, b | rest], ranks, index, acc) do
+    acc =
+      case Map.get(ranks, a <> b) do
         nil -> acc
         rank -> pick_lower(acc, index, rank)
       end
-    end)
+
+    find_min_pair([b | rest], ranks, index + 1, acc)
   end
 
   defp pick_lower(nil, index, rank), do: {index, rank}
 
-  defp pick_lower({_idx, current_min} = _acc, index, rank) when rank < current_min,
+  defp pick_lower({_idx, current_min}, index, rank) when rank < current_min,
     do: {index, rank}
 
   defp pick_lower(acc, _index, _rank), do: acc

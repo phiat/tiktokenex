@@ -30,7 +30,7 @@ defmodule Tiktokenex.Ranks do
 
   def load(encoding) do
     raise ArgumentError,
-      "unsupported encoding #{inspect(encoding)}, expected one of #{inspect(@supported_encodings)}"
+          "unsupported encoding #{inspect(encoding)}, expected one of #{inspect(@supported_encodings)}"
   end
 
   @doc """
@@ -50,7 +50,7 @@ defmodule Tiktokenex.Ranks do
 
   def inverse(encoding) do
     raise ArgumentError,
-      "unsupported encoding #{inspect(encoding)}, expected one of #{inspect(@supported_encodings)}"
+          "unsupported encoding #{inspect(encoding)}, expected one of #{inspect(@supported_encodings)}"
   end
 
   defp build_inverse(encoding) do
@@ -103,7 +103,7 @@ defmodule Tiktokenex.Ranks do
 
     unless File.exists?(path) do
       raise RuntimeError,
-        "rank file not found at #{path}. Run `just download-ranks` to fetch rank files."
+            "rank file not found at #{path}. Run `just download-ranks` to fetch rank files."
     end
 
     path

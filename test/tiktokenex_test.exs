@@ -135,9 +135,56 @@ defmodule TiktokenexTest do
       assert Tiktokenex.decode(encoded, :o200k_base) == text
     end
 
+    test "o200k reference vector for hello world" do
+      assert Tiktokenex.encode("hello world", :o200k_base) == [24_912, 2375]
+    end
+
     test "count with o200k_base" do
       count = Tiktokenex.count("hello world", :o200k_base)
-      assert is_integer(count) and count > 0
+      assert count == 2
+    end
+
+    test "o200k round-trip with unicode" do
+      text = "こんにちは世界"
+      assert Tiktokenex.decode(Tiktokenex.encode(text, :o200k_base), :o200k_base) == text
+    end
+  end
+
+  describe "decode/2 error handling" do
+    test "raises ArgumentError on unknown token ID" do
+      assert_raise ArgumentError, ~r/unknown token ID 999999999/, fn ->
+        Tiktokenex.decode([999_999_999])
+      end
+    end
+
+    test "includes encoding name in error" do
+      assert_raise ArgumentError, ~r/cl100k_base/, fn ->
+        Tiktokenex.decode([999_999_999], :cl100k_base)
+      end
+    end
+  end
+
+  describe "unsupported encoding" do
+    test "encode raises ArgumentError for unknown encoding" do
+      assert_raise ArgumentError, ~r/unsupported encoding/, fn ->
+        Tiktokenex.encode("hello", :gpt2)
+      end
+    end
+
+    test "decode raises ArgumentError for unknown encoding" do
+      assert_raise ArgumentError, ~r/unsupported encoding/, fn ->
+        Tiktokenex.decode([1], :gpt2)
+      end
+    end
+  end
+
+  describe "vocab_size/1" do
+    test "cl100k_base vocab size" do
+      assert Tiktokenex.vocab_size(:cl100k_base) == 100_256
+    end
+
+    test "o200k_base vocab size" do
+      assert Tiktokenex.vocab_size(:o200k_base) == 199_998
     end
   end
 end

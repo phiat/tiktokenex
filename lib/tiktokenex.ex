@@ -42,6 +42,9 @@ defmodule Tiktokenex do
   @doc """
   Decodes a list of token IDs back into a binary string.
 
+  The encoding must match the one used to produce the token IDs.
+  Raises `ArgumentError` if a token ID is not found in the encoding's vocabulary.
+
   ## Examples
 
       iex> Tiktokenex.decode([15339, 1917])
@@ -52,14 +55,19 @@ defmodule Tiktokenex do
     inverse = Ranks.inverse(encoding)
 
     token_ids
-    |> Enum.map_join(fn id -> Map.fetch!(inverse, id) end)
+    |> Enum.map_join(fn id ->
+      case Map.fetch(inverse, id) do
+        {:ok, bytes} -> bytes
+        :error -> raise ArgumentError, "unknown token ID #{id} for encoding #{encoding}"
+      end
+    end)
   end
 
   @doc """
-  Encodes text and returns the pre-tokenized string chunks.
+  Encodes text and returns the token byte-string chunks.
 
-  Each chunk corresponds to one or more BPE tokens. This is useful for
-  visualizing how text is split before full BPE encoding.
+  Each chunk corresponds to one BPE token. Useful for visualizing
+  how text is tokenized.
 
   ## Examples
 
@@ -84,6 +92,9 @@ defmodule Tiktokenex do
   @doc """
   Returns the number of tokens in the text.
 
+  More efficient than `encode/2 |> length/1` as it avoids building
+  the full token ID list.
+
   ## Examples
 
       iex> Tiktokenex.count("hello world")
@@ -91,8 +102,25 @@ defmodule Tiktokenex do
   """
   @spec count(binary(), atom()) :: non_neg_integer()
   def count(text, encoding \\ @default_encoding) when is_binary(text) do
+    ranks = Ranks.load(encoding)
+
     text
-    |> encode(encoding)
-    |> length()
+    |> Pretokenizer.split(encoding)
+    |> Enum.reduce(0, fn chunk, acc ->
+      acc + length(BPE.encode(chunk, ranks))
+    end)
+  end
+
+  @doc """
+  Returns the vocabulary size for the given encoding.
+
+  ## Examples
+
+      iex> Tiktokenex.vocab_size() > 100_000
+      true
+  """
+  @spec vocab_size(atom()) :: non_neg_integer()
+  def vocab_size(encoding \\ @default_encoding) do
+    encoding |> Ranks.load() |> map_size()
   end
 end
