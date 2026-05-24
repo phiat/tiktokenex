@@ -29,24 +29,33 @@ Tiktokenex.encode("Hello", :o200k_base)
 
 ## Installation
 
-Add to your `mix.exs`:
+Add to your `mix.exs` as a git or path dependency:
 
 ```elixir
 def deps do
   [
-    {:tiktokenex, path: "./tiktokenex"}  # local dependency
+    # git
+    {:tiktokenex, git: "https://github.com/phiat/tiktokenex.git"},
+    # …or a sibling working copy for development
+    {:tiktokenex, path: "../tiktokenex"}
   ]
 end
 ```
 
-BPE rank files are stored in `priv/ranks/`. Download them with:
+BPE rank files are not tracked in git — fetch them once with the bundled justfile recipe:
 
 ```bash
-# cl100k_base (GPT-4, GPT-3.5)
+git clone https://github.com/phiat/tiktokenex.git
+cd tiktokenex
+just setup        # mix deps.get + downloads cl100k_base + o200k_base into priv/ranks/
+```
+
+Or download manually:
+
+```bash
+mkdir -p priv/ranks
 curl -o priv/ranks/cl100k_base.tiktoken \
   https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken
-
-# o200k_base (GPT-4o)
 curl -o priv/ranks/o200k_base.tiktoken \
   https://openaipublic.blob.core.windows.net/encodings/o200k_base.tiktoken
 ```
@@ -73,9 +82,10 @@ Default encoding is `:cl100k_base`. Pass `:o200k_base` as the second argument fo
 ## Tests
 
 ```bash
-mix test  # 47 tests covering BPE, ranks, pre-tokenization, round-trips
+just check    # mix test + credo + compile-with-warnings-as-errors
+just test     # tests only
 ```
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

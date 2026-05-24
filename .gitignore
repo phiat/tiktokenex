@@ -22,3 +22,6 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 tiktokenex-*.tar
 
+
+# BPE rank files — downloaded via `just download-ranks`, not tracked
+/priv/ranks/*.tiktoken
