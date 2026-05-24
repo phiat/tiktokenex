@@ -1,5 +1,10 @@
 # Tiktokenex
 
+[![Hex.pm](https://img.shields.io/hexpm/v/tiktokenex.svg)](https://hex.pm/packages/tiktokenex)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-blue.svg)](https://hexdocs.pm/tiktokenex)
+[![CI](https://github.com/phiat/tiktokenex/actions/workflows/ci.yml/badge.svg)](https://github.com/phiat/tiktokenex/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Pure Elixir BPE tokenizer compatible with OpenAI's [tiktoken](https://github.com/openai/tiktoken). No NIFs, no Python, no external dependencies.
 
 Supports `cl100k_base` (GPT-4, GPT-3.5) and `o200k_base` (GPT-4o) encodings.
