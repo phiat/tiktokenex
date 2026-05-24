@@ -25,3 +25,14 @@ tiktokenex-*.tar
 
 # BPE rank files — downloaded via `just download-ranks`, not tracked
 /priv/ranks/*.tiktoken
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+
+# Agent-local files — never tracked
+.beads/
+.claude/
+AGENTS.md
+CLAUDE.md
